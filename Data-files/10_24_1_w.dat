@@ -20,7 +20,7 @@ param : 	p_min_bound	p_max_bound	U_t	D_t	T_U	T_D	c	c_u	p0	v0	R_U	R_D	S_U	S_D :=
 
 
 # demand and spinning reserves
-param : 	D	R
+param : 	D	R :=
 1		311.085	0.0688635
 2		228.634	0.107755
 3		176.607	0.0671423
