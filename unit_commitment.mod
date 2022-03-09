@@ -51,7 +51,7 @@ subject to demand{t in T}:
 	sum{j in J}p[j, t] = D[t];
 
 subject to spinning_reserve{t in T}:
-	sum{j in J} p_max[j, t] >= D[t] + R[t];
+	sum{j in J} p_max[j, t] >= D[t] + D[t]*R[t];
 	
 	
 ####################### Start up constrainst #############################
@@ -60,16 +60,11 @@ subject to status_update{j in J, t in T}:
           else v[j,t-1] - v[j,t] + y[j,t] - z[j,t]
 	= 0;
 
-#Redundant with uptime/downtime constraint ?
-subject to status_disjoint{j in J, t in T}:
-	y[j,t] + z[j,t] <=1;
-	
-	
-	
+
 #========================================================================#
 
 
-####################### Ramping constraint ##############################
+####################### Ramping constraints ##############################
 
 subject to ramping_up{j in J, t in T}:
 	if t==1 then p[j,t] - p0[j] - (R_U[j]*v0[j] + S_U[j] * y[j, t])
@@ -82,6 +77,7 @@ subject to ramping_down{j in J, t in T}:
 	<= 0;
 #=======================================================================#
 
+####################### Uptime and downtime constraints ##############################
 
 subject to uptime{j in J, t in T : t>U_t[j]}:
 	sum{k in {(t-T_U[j]+1)..t} : k>=1} y[j, k] <= v[j, t];
@@ -108,14 +104,11 @@ subject to p_max_ramping_up{j in J, t in T}:
 	if t==1 then p_max[j,t] - p0[j] - (R_U[j]*v0[j] + S_U[j] * y[j, t])
           else p_max[j,t] - p[j, t-1] - (R_U[j]*v[j, t-1] + S_U[j] * y[j, t])
 	<= 0;
-
 subject to p_max_ramping_down{j in J, t in 1..bar_t-1}:
-	p_max[j, t] - (p_max_bound[j] * (v[j, t] - z[j, t+1]) + z[j, t+1] * S_D[j])<=0;
+ 	p_max[j, t] <= p_max_bound[j] * (v[j, t] - z[j, t+1]) + z[j, t+1] * S_D[j];
 
 
 #===========================================================================#
-
-
 
 
 
