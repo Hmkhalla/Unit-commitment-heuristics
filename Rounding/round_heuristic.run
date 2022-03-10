@@ -1,0 +1,64 @@
+reset;
+model unit_commitment.mod;
+option solver cplex;
+
+option cplex_options 'nodefile=2 \
+       mipdisplay=2 \
+       mipinterval=100 \
+       file=model.lp \
+       timelimit=7200 \
+       logfile=cplex.log';
+option eexit -555;
+option display_1col 0;
+option display_transpose -3;
+
+param v_{j in J, t in T} binary; 
+param count;
+let count:=0;
+
+for {dat in {'10_24_0_w.dat', '10_24_1_w.dat', '20_24_0_w.dat', '20_24_1_w.dat', '50_24_0_w.dat', '50_24_1_w.dat', '50_24_2_w.dat'}}{
+
+	update data;
+	data (dat);
+	
+	let {j in J, t in T} p[j,t]:= 0;		
+	let {j in J, t in T} p_max[j,t] := 0;	
+	let {j in J, t in T} v[j,t]:= 0;	
+	let {j in J, t in T} y[j,t] := 0;	
+	let {j in J, t in T} z[j,t]:= 0;
+	
+	unfix v;
+	option relax_integrality 1;
+	printf "\n######## Data file %s#########\n", dat;
+	solve;
+	
+	printf "\n### Result rounding: %s\n", solve_result;
+	#display cost_function;
+	
+	
+	let {j in J, t in T} v_[j,t]:=round(v[j,t]);
+
+	#display v;
+	#display v_;
+
+	let {j in J, t in T} p[j,t]:= 0;		
+	let {j in J, t in T} p_max[j,t] := 0;
+	let {j in J, t in T} v[j,t] := 0; 	
+	let {j in J, t in T} y[j,t] := 0;
+	let {j in J, t in T} z[j,t] := 0;
+	
+	fix{j in J, t in T} v[j,t]:=v_[j,t];
+	
+	option relax_integrality 0;
+	solve;
+	printf "\n### Result final: %s\n", solve_result;
+	#display cost_function;
+	if solve_result = "solved" then {
+		let count:=count+1;
+	}
+	
+
+}
+
+display count;
+#display _total_solve_time;
