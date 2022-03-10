@@ -1,0 +1,59 @@
+reset;
+model unit_commitment.mod;
+data 10_24_0_w.dat;
+
+
+param ind{J} default 0;
+
+param D_temp{T_max};
+param R_temp{T_max};
+
+for {t in T_max}{ 
+	let D_temp[t] := D[t];
+	let R_temp[t] := R[t];  
+}
+
+let bar_t := 1;
+
+reset data R, D;
+
+for {t in T_max}{
+	let D[1] := D_temp[t];
+	let R[1] := R_temp[t];
+	
+	option solver cplex;
+	solve;
+	
+	display v;
+	
+	for {j in 1..bar_n}{
+		let ind[j] := ind[j] + v[j,1];
+	}
+}
+
+display ind;
+
+let bar_t := 24;
+
+reset data v, R, D;
+
+for {j in J}{
+	if ind[j] = bar_t_max then {
+		for {t in T_max}{
+			fix v[j,t] := 1;
+		}
+	}
+
+}
+
+for {t in T_max}{ 
+	let D[t] := D_temp[t];
+	let R[t] := R_temp[t];  
+}
+
+
+option solver cplex;
+solve;
+
+display v;
+
