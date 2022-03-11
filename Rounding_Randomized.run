@@ -1,0 +1,72 @@
+reset;
+model unit_commitment.mod;
+data 10_24_1_w.dat;
+option solver cplex;
+
+
+option cplex_options 'nodefile=2 \
+       mipdisplay=2 \
+       mipinterval=100 \
+       file=model.lp \
+       timelimit=7200 \
+       logfile=cplex.log';
+option eexit -555;
+option display_1col 0;
+option display_transpose -3;
+option eexit -10000;
+
+param v_{j in J, t in T} binary;
+param count;
+let count:=0;
+
+
+for {i in 1..10000}{
+
+	
+	let {j in J, t in T} p[j,t]:= 0;		
+	let {j in J, t in T} p_max[j,t] := 0;	
+	let {j in J, t in T} v[j,t]:= 0;	
+	let {j in J, t in T} y[j,t] := 0;	
+	let {j in J, t in T} z[j,t]:= 0;
+	
+	unfix v;
+	option relax_integrality 1;
+	solve;
+	
+	printf "\n### Result rounding: %s\n", solve_result;
+	#display v;
+	
+	for {j in J, t in T}{
+		if Uniform01() < v[j,t] then  {
+			let v_[j,t] := 1;
+		} else {
+			let v_[j,t] := 0;
+		}
+			
+	}
+
+	#display v;
+	#display v_;
+
+	let {j in J, t in T} p[j,t]:= 0;		
+	let {j in J, t in T} p_max[j,t] := 0;
+	let {j in J, t in T} v[j,t] := 0; 	
+	let {j in J, t in T} y[j,t] := 0;
+	let {j in J, t in T} z[j,t] := 0;
+	
+	fix {j in J, t in T} v[j,t]:=v_[j,t];
+	
+	option relax_integrality 0;
+	solve;
+	printf "\n### Result final: %s\n", solve_result;
+	
+	if solve_result = "solved" then {
+		let count:=count+1;
+	}
+	display count;
+	
+}
+
+
+	#display cost_function;
+#display _total_solve_time;
