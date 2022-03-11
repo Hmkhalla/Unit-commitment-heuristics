@@ -1,12 +1,11 @@
 reset;
 model unit_commitment.mod;
-data 10_24_0_w.dat;
+data Data-files/20_24_0_w2.dat;;
 option solver cplex;
 option display_1col 0;
 option display_transpose -3;
 
 solve;
-display y; 
-display z;
-display v;
-display p;
+printf "#####################################################################\n";
+printf "##   Final solution: of = %f, time = %f   ###\n", cost_function, _total_solve_time;
+printf "#####################################################################\n"; 

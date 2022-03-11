@@ -1,20 +1,17 @@
 reset;
 model unit_commitment.mod;
-data Data-files/150_24_012_w.dat;
+data Data-files/50_24_0_w.dat;
 
 option relax_integrality 1;
 
 option solver cplex;
 solve;
-display _total_solve_time;
 
-printf "\nContinious relaxation optimal solution:\n";
+printf "#####################################################################\n";
+printf "##   Continious relaxation optimal solution: of = %f, time = %f   ###\n", cost_function, _total_solve_time;
+printf "#####################################################################\n"; 
 
-display v;
-#display p;
-display cost_function;
-
-printf "\nFixing status variable:";
+printf "\nFixing status variable\n\n";
 param n_fix;
 param ratio := 0.25;
 let n_fix := 0;
@@ -25,13 +22,10 @@ for {j in J, t in T}{
 	}
 	
 }
-display n_fix;
-printf "variables fixed\n";
 
 option relax_integrality 0;
 
 solve;
-display v;
-#display p;
-display _total_solve_time;
-display cost_function;
+printf "#####################################################################\n";
+printf "##   Final solution: of = %f, ratio = %f, fix = %d, time = %f   ###\n", cost_function, ratio, n_fix, _total_solve_time;
+printf "#####################################################################\n"; 

@@ -110,7 +110,11 @@ subject to p_max_ramping_down{j in J, t in 1..bar_t-1}:
 
 #===========================================================================#
 
+#subject to time_on_at_start{j in J, t in 1..U_t[j]}:
+#	v[j,t]=1;
 
+#subject to time_off_at_start{j in J, t in 1..D_t[j]}:
+#	v[j,t]=0;
 
 
 
